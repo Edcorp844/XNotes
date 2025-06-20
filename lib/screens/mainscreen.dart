@@ -1,83 +1,69 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_quill/quill_delta.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:myapp/models/note_model.dart';
-import 'package:myapp/repositories/note_repo.dart';
-import 'package:myapp/screens/note_editor_screen.dart';
+import 'package:myapp/screens/gmail_notes_screen.dart';
+import 'package:myapp/screens/local_notes_screen.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       child: CustomScrollView(
         slivers: [
-          const CupertinoSliverNavigationBar(largeTitle: Text('Folders')),
+          CupertinoSliverNavigationBar.search(
+            largeTitle: const Text('Folders'),
+            searchField: const CupertinoSearchTextField(),
+            trailing: CupertinoButton(child: Text('Edit'), onPressed: () {}),
+          ),
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Local Notes Folder (from Hive)
+                /// 🌿 Local Notes Section
                 CupertinoListSection.insetGrouped(
-                  header: const Text('Local Storage'),
+                  header: const Text('On This Device'),
                   children: [
-                    CupertinoListTile(
-                      title: const Row(
-                        children: [
-                          Icon(CupertinoIcons.folder_fill),
-                          SizedBox(width: 8),
-                          Text('Notes'),
-                        ],
-                      ),
-                      additionalInfo: ValueListenableBuilder<Box<Note>>(
-                        valueListenable: Hive.box<Note>('notes').listenable(),
-                        builder: (context, box, _) {
-                          final noteCount = box.length;
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              '$noteCount',
-                              style: CupertinoTheme.of(
-                                context,
-                              ).textTheme.textStyle.copyWith(
-                                color: CupertinoColors.secondaryLabel,
+                    ValueListenableBuilder<Box<Note>>(
+                      valueListenable: Hive.box<Note>('notes').listenable(),
+                      builder: (context, box, _) {
+                        return FolderTile(
+                          icon: CupertinoIcons.folder_fill,
+                          folderName: 'Notes',
+                          noteCount: box.length,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                builder: (_) => const LocalNotesScreen(),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      trailing: const Icon(CupertinoIcons.right_chevron),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                /// 📩 Gmail Notes Section
+                CupertinoListSection.insetGrouped(
+                  header: const Text('Gmail Notes'),
+                  children: [
+                    FolderTile(
+                      icon: CupertinoIcons.folder,
+                      folderName: 'Notes',
+                      noteCount:
+                          null, // Optional: you can fetch Gmail note count
                       onTap: () {
-                        // Navigate to local notes screen
                         Navigator.push(
                           context,
                           CupertinoPageRoute(
-                            builder: (context) => LocalNotesScreen(),
+                            builder: (_) => const GmailNotesScreen(),
                           ),
                         );
                       },
                     ),
-
-                    // Show note count from Hive
-                  ],
-                ),
-
-                // Google Folders Section
-                CupertinoListSection.insetGrouped(
-                  header: const Text('Google Sync'),
-                  children: const [
-                    FolderTile(folderName: 'Stored'),
-                    FolderTile(folderName: 'Learn'),
-                    FolderTile(folderName: 'Guitar'),
                   ],
                 ),
               ],
@@ -90,95 +76,42 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 class FolderTile extends StatelessWidget {
+  final IconData icon;
   final String folderName;
-  const FolderTile({super.key, required this.folderName});
+  final int? noteCount;
+  final VoidCallback onTap;
+
+  const FolderTile({
+    super.key,
+    required this.icon,
+    required this.folderName,
+    this.noteCount,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = CupertinoTheme.of(context).textTheme;
+
     return CupertinoListTile(
       title: Row(
         children: [
-          const Icon(CupertinoIcons.folder),
+          Icon(icon, size: 20),
           const SizedBox(width: 8),
-          Text(folderName),
+          Text(folderName, style: textTheme.textStyle),
         ],
       ),
+      additionalInfo:
+          noteCount != null
+              ? Text(
+                '$noteCount',
+                style: textTheme.textStyle.copyWith(
+                  color: CupertinoColors.secondaryLabel,
+                ),
+              )
+              : null,
       trailing: const Icon(CupertinoIcons.right_chevron),
-      onTap: () {
-        // Handle folder tap
-      },
-    );
-  }
-}
-
-class LocalNotesScreen extends StatelessWidget {
-  const LocalNotesScreen({super.key});
-
-  void createNewNote(BuildContext context) {
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (context) => CupertinoNoteEditor()),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        CupertinoSliverNavigationBar.search(
-          searchField: CupertinoSearchTextField(),
-          largeTitle: Text('Notes'),
-          previousPageTitle: 'Folders',
-          trailing: IconButton(
-            onPressed: () {},
-            icon: Icon(CupertinoIcons.ellipsis_circle),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: ValueListenableBuilder<Box<Note>>(
-              valueListenable: Hive.box<Note>('notes').listenable(),
-              builder: (context, box, _) {
-                final notes = box.values.toList();
-                if (notes.isEmpty) {
-                  return const Center(child: Text('No notes found'));
-                }
-                return CupertinoListSection.insetGrouped(
-                  children: List.generate(notes.length, (index) {
-                    final note = notes[index];
-
-                    return CupertinoListTile(
-                      title: Text(
-                        note.title.isNotEmpty ? note.title : 'Untitled Note',
-                        style: CupertinoTheme.of(context).textTheme.textStyle,
-                      ),
-                      subtitle: Text(
-                        note.content.length > 30
-                            ? note.content.substring(0, 30) + '...'
-                            : note.content,
-                        style: CupertinoTheme.of(context).textTheme.textStyle
-                            .copyWith(color: CupertinoColors.secondaryLabel),
-                      ),
-                      trailing: const Icon(CupertinoIcons.chevron_right),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder:
-                                (context) =>
-                                    CupertinoNoteEditor(existingNote: note),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+      onTap: onTap,
     );
   }
 }

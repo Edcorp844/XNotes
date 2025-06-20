@@ -94,6 +94,7 @@ class _CupertinoNoteEditorState extends State<CupertinoNoteEditor> {
         ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
+          onPressed: _isEdited ? _saveNote : null,
           child: Text(
             'Done',
             style: textTheme.textStyle.copyWith(
@@ -104,78 +105,86 @@ class _CupertinoNoteEditorState extends State<CupertinoNoteEditor> {
                       : CupertinoColors.inactiveGray,
             ),
           ),
-          onPressed: _isEdited ? _saveNote : null,
         ),
       ),
       child: SafeArea(
         child: Column(
           children: [
-            Container(
-              height: 44,
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: CupertinoColors.separator,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildToolbarButton(
-                      CupertinoIcons.bold,
-                      () => _controller.formatSelection(Attribute.bold),
-                    ),
-                    _buildToolbarButton(
-                      CupertinoIcons.italic,
-                      () => _controller.formatSelection(Attribute.italic),
-                    ),
-                    _buildToolbarButton(
-                      CupertinoIcons.underline,
-                      () => _controller.formatSelection(Attribute.underline),
-                    ),
-                    _buildToolbarButton(
-                      CupertinoIcons.list_bullet,
-                      () => _controller.formatSelection(Attribute.ul),
-                    ),
-                    _buildToolbarButton(
-                      CupertinoIcons.list_number,
-                      () => _controller.formatSelection(Attribute.ol),
-                    ),
-                    _buildToolbarButton(
-                      CupertinoIcons.textformat_size,
-                      () => _controller.formatSelection(Attribute.h1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             Expanded(
               child: CupertinoScrollbar(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: Theme(
-                    // 👈 Wrap to satisfy Quill's style dependencies
-                    data: ThemeData(), // empty/default is fine
-                    child: Material(
-                      color: CupertinoColors.systemBackground.resolveFrom(
-                        context,
-                      ),
-                      child: QuillEditor(
-                        controller: _controller,
-                        focusNode: _editorFocusNode,
-                        scrollController: ScrollController(),
-                        config: QuillEditorConfig(
-                          scrollable: false,
-                          autoFocus: true,
-                          placeholder: 'Start typing...',
-                          expands: false,
-                          padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      Theme(
+                        // 👈 Wrap to satisfy Quill's style dependencies
+                        data: ThemeData(), // empty/default is fine
+                        child: Material(
+                          color: CupertinoColors.systemBackground.resolveFrom(
+                            context,
+                          ),
+                          child: QuillEditor(
+                            controller: _controller,
+                            focusNode: _editorFocusNode,
+                            scrollController: ScrollController(),
+                            config: QuillEditorConfig(
+                              scrollable: false,
+                              autoFocus: true,
+                              placeholder: 'Start typing...',
+                              expands: false,
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: CupertinoColors.separator,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildToolbarButton(
+                                CupertinoIcons.bold,
+                                () =>
+                                    _controller.formatSelection(Attribute.bold),
+                              ),
+                              _buildToolbarButton(
+                                CupertinoIcons.italic,
+                                () => _controller.formatSelection(
+                                  Attribute.italic,
+                                ),
+                              ),
+                              _buildToolbarButton(
+                                CupertinoIcons.underline,
+                                () => _controller.formatSelection(
+                                  Attribute.underline,
+                                ),
+                              ),
+                              _buildToolbarButton(
+                                CupertinoIcons.list_bullet,
+                                () => _controller.formatSelection(Attribute.ul),
+                              ),
+                              _buildToolbarButton(
+                                CupertinoIcons.list_number,
+                                () => _controller.formatSelection(Attribute.ol),
+                              ),
+                              _buildToolbarButton(
+                                CupertinoIcons.textformat_size,
+                                () => _controller.formatSelection(Attribute.h1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
