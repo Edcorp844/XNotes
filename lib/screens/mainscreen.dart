@@ -15,7 +15,11 @@ class MainScreen extends StatelessWidget {
           CupertinoSliverNavigationBar.search(
             largeTitle: const Text('Folders'),
             searchField: const CupertinoSearchTextField(),
-            trailing: CupertinoButton(child: Text('Edit'), onPressed: () {}),
+            trailing: CupertinoButton(
+              onPressed: () {},
+              padding: EdgeInsets.zero,
+              child: const Text('Edit'),
+            ),
           ),
           SliverToBoxAdapter(
             child: Column(

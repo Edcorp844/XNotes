@@ -16,12 +16,12 @@ class _AuthGateState extends State<AuthGate> {
   bool _signedIn = false;
   String? _error;
 
-  late final GoogleAuthService _authService;
+  late final GoogleService _authService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _authService = Provider.of<GoogleAuthService>(context, listen: false);
+    _authService = Provider.of<GoogleService>(context, listen: false);
     _checkSignIn();
   }
 

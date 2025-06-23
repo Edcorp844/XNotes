@@ -20,8 +20,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider(create: (_) => GoogleAuthService()),
-        ProxyProvider<GoogleAuthService, NoteRepository>(
+        Provider(create: (_) => GoogleService()),
+        ProxyProvider<GoogleService, NoteRepository>(
           update: (_, authService, __) {
             // You may want to customize NoteRepository to depend on authService if needed
             return NoteRepository(Hive.box<Note>('notes'));
@@ -42,17 +42,26 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'XNotes',
       theme: CupertinoThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         textTheme: CupertinoTextThemeData(
-          navTitleTextStyle: const TextStyle(
+          navTitleTextStyle: TextStyle(
             fontFamily: 'SanFrancisco',
             fontSize: 18,
             fontWeight: FontWeight.w600,
+            color: CupertinoDynamicColor.resolve(
+              CupertinoColors.label,
+              context,
+            ),
           ),
-          textStyle: const TextStyle(fontFamily: 'SanFrancisco', fontSize: 16),
+          textStyle: TextStyle(
+            fontFamily: 'SanFrancisco',
+            fontSize: 16,
+            color: CupertinoDynamicColor.resolve(
+              CupertinoColors.label,
+              context,
+            ),
+          ),
         ),
-        barBackgroundColor: CupertinoColors.systemBackground,
-        scaffoldBackgroundColor: CupertinoColors.systemBackground,
       ),
       home: const AuthGate(child: MainScreen()),
     );

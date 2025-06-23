@@ -11,13 +11,13 @@ import 'package:uuid/uuid.dart';
 class CupertinoNoteEditor extends StatefulWidget {
   final Note? existingNote;
 
-  const CupertinoNoteEditor({Key? key, this.existingNote}) : super(key: key);
+  const CupertinoNoteEditor({super.key, this.existingNote});
 
   @override
-  _CupertinoNoteEditorState createState() => _CupertinoNoteEditorState();
+  CupertinoNoteEditorState createState() => CupertinoNoteEditorState();
 }
 
-class _CupertinoNoteEditorState extends State<CupertinoNoteEditor> {
+class CupertinoNoteEditorState extends State<CupertinoNoteEditor> {
   late final QuillController _controller;
   late final TextEditingController _titleController;
   late final FocusNode _titleFocusNode;
